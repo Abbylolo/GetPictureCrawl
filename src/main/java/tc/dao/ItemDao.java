@@ -1,6 +1,6 @@
-package jd.dao;
+package tc.dao;
 
-import jd.pojo.Item;
+import tc.pojo.Item;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

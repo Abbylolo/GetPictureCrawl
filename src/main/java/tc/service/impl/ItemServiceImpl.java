@@ -1,9 +1,8 @@
-package jd.service.impl;
+package tc.service.impl;
 
-import jd.dao.ItemDao;
-import jd.pojo.Item;
-import jd.service.ItemService;
-import org.hibernate.criterion.Example;
+import tc.dao.ItemDao;
+import tc.pojo.Item;
+import tc.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +10,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
-//由Spring来创建它的实例
+// 由Spring来创建它的实例
 public class ItemServiceImpl implements ItemService {
 
     //用DAO保存数据
@@ -19,7 +18,8 @@ public class ItemServiceImpl implements ItemService {
     private ItemDao itemDao;
 
     @Override
-    @Transactional  //开启提交事务
+    @Transactional
+    // 开启提交事务
     public void save(Item item){
         this.itemDao.save(item);
     }

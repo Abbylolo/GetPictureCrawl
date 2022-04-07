@@ -1,6 +1,6 @@
-package jd.service;
+package tc.service;
 
-import jd.pojo.Item;
+import tc.pojo.Item;
 
 import java.util.List;
 
