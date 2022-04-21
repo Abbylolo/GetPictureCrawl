@@ -7,6 +7,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
+import org.aspectj.util.FileUtil;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,6 +20,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 
 //该注解用于创建Spring实例
@@ -68,7 +75,7 @@ public class HttpUtils {
                 if(response.getEntity() != null){
                     // content - html正文
                     String content = EntityUtils.toString(response.getEntity());
-                    logger.info("响应的数据:{}", content);
+                    // logger.info("响应的数据:{}", content);
                     return content;
                 }
             } else {
@@ -123,7 +130,8 @@ public class HttpUtils {
 
                     //创建图片名，重命名图片
                     //UUID.randomUUID()-生成唯一识别码
-                    String picName = UUID.randomUUID().toString()+extName;
+                    String uuid = UUID.randomUUID().toString();
+                    String picName = uuid+extName;
 
                     //下载图片
                     //声明OutPutStream
@@ -150,6 +158,48 @@ public class HttpUtils {
         }
         //下载失败时返回空串
         return "";
+    }
+
+    // 获取截图
+    public void snapShotBySelenium(String url) {
+        System.setProperty("webdriver.chrome.driver", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chromedriver.exe");
+
+        try {
+            ChromeOptions options = new ChromeOptions();
+            options.addArguments("--headless");
+            options.addArguments("--disable-gpu");
+            options.addArguments("--no-sandbox");
+
+            ChromeDriver driver = new ChromeDriver(options);
+            driver.manage().window().maximize();
+            driver.get(url);
+            String jsHeight = "return document.body.clientHeight";
+            long height = (long) driver.executeScript(jsHeight);
+            int k = 1;
+            int size = 500;
+            while (k * size < height) {
+                String jsMove = String.format("window.scrollTo(0,%s)", k * 500);
+                driver.executeScript(jsMove);
+                Thread.sleep(100);
+                height = (long) driver.executeScript(jsHeight);
+                k += 1;
+            }
+
+            // 通过执行脚本解决Selenium截图不全问题
+            long maxWidth = (long) driver.executeScript(
+                    "return Math.max(document.body.scrollWidth, document.body.offsetWidth, document.documentElement.clientWidth, document.documentElement.scrollWidth, document.documentElement.offsetWidth);");
+            long maxHeight = (long) driver.executeScript(
+                    "return Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);");
+            Dimension targetSize = new Dimension((int)maxWidth, (int)maxHeight);
+            driver.manage().window().setSize(targetSize);
+
+            //使用getScreenshotAs进行截取屏幕
+            File img = driver.getScreenshotAs(OutputType.FILE);
+            String uuid = UUID.randomUUID().toString();
+            FileUtil.copyFile(img, new File("E:\\Project\\Crawl\\outcome\\SnapShots\\"+uuid + ".png"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     //设置请求信息

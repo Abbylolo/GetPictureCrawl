@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import tc.util.SnapShots;
+import tc.util.SnapShotsBySelenium;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -26,7 +28,6 @@ public class ItemTask {
 
     @Autowired
     private HttpUtils httpUtils;
-    private SnapShots snapShots;
 
     @Autowired
     private ItemServiceImpl itemService;
@@ -47,8 +48,11 @@ public class ItemTask {
         seeds.add("https://www.ctrip.com/");
         for (int i = 0; i < seeds.size(); i++) {
             url = seeds.get(i);
+            System.out.println("url"+url);
             String html = httpUtils.doGetHtml(url);
-            this.parse(html);
+            this.parse(url, html);
+            // 获取截图
+//            httpUtils.snapShotBySelenium(url);
             System.out.println(url + "爬取完成！");
         }
     }
@@ -59,12 +63,17 @@ public class ItemTask {
      * @param html 待爬取的html页面
      * @throws IOException
      */
-    private void parse(String html) throws IOException {
+    private void parse(String initUrl, String html) throws Exception {
+        // 获取截图
+        httpUtils.snapShotBySelenium(initUrl);
         // 解析html，获取dom对象
         Document doc = Jsoup.parse(html);
         Elements links = doc.select("a");
         for(Element link : links) {
-            seeds.add(link.attr("href"));
+            String url = link.attr("href");
+            httpUtils.snapShotBySelenium(url);
+            seeds.add(url);
+            System.out.println("surl: "+url);
         }
         // 获取网页中所有图片
         Elements images = doc.select("img");
@@ -72,14 +81,19 @@ public class ItemTask {
         for (Element image : images) {
             // 获取商品图片url
             // Elements.attr - 从具有该属性的第一个匹配元素中获取属性值。
-            if(image.attr("src") != "") {
-                picUrl = "https:"+image.attr("src");
-            } else if(image.attr("nsrc") != "") {
-                picUrl = "https:"+image.attr("nsrc");
-            } else if(image.attr("orisrc") != "") {
-                picUrl = "https:"+image.attr("orisrc");
-            } else if(image.attr("data-src") != "") {
-                picUrl = "https:"+image.attr("data-src");
+            if(!"".equals(image.attr("src"))) {
+                picUrl = image.attr("src");
+                picUrl = picUrl.contains("http") ? picUrl : "https:"+picUrl;
+            } else if(!"".equals(image.attr("nsrc"))) {
+                picUrl = image.attr("nsrc");
+                picUrl = picUrl.contains("http") ? picUrl : "https:"+picUrl;
+                // picUrl = "https:"+image.attr("nsrc");
+            } else if(!"".equals(image.attr("orisrc"))) {
+                picUrl = image.attr("orisrc");
+                picUrl = picUrl.contains("http") ? picUrl : "https:"+picUrl;
+            } else if(!"".equals(image.attr("data-src"))) {
+                picUrl = image.attr("data-src");
+                picUrl = picUrl.contains("http") ? picUrl : "https:"+picUrl;
             }else {
                 logger.error("未识别到图片的来源标签:{}",image);
                 continue;
@@ -92,8 +106,9 @@ public class ItemTask {
             item.setPic(picName);
 
             // 获取截图
-            snapShots = new SnapShots("E:\\Project\\Crawl\\outcome\\SnapShots\\", "travel", "png");
-            snapShots.snapShot();
+            /*SnapShots snapShots = new SnapShots(picUrl,"E:\\Project\\Crawl\\outcome\\SnapShots\\", "travel", "png");
+            snapShots.snapShot();*/
+            // cutPicture.cutImage(picUrl, new File("E:\\Project\\Crawl\\outcome\\SnapShots\\"));
 
             // 创建时间
             item.setCreated(new Date());
