@@ -42,13 +42,13 @@ public class ItemTask {
     @Scheduled(fixedDelay = 1000*1000 )
     public void itemTask() throws Exception{
         String url = null;
-        seeds.add("https://www.lvmama.com/");
+        // seeds.add("https://www.lvmama.com/");
         seeds.add("https://www.toutiao.com/");
-        seeds.add("https://www.ly.com/");
-        seeds.add("https://www.ctrip.com/");
+        // seeds.add("https://www.ly.com/");
+        // seeds.add("https://www.ctrip.com/");
         for (int i = 0; i < seeds.size(); i++) {
             url = seeds.get(i);
-            System.out.println("url"+url);
+            System.out.println("url:"+url);
             String html = httpUtils.doGetHtml(url);
             this.parse(url, html);
             // 获取截图

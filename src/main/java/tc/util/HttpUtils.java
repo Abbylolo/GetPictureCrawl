@@ -16,11 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
@@ -193,8 +191,11 @@ public class HttpUtils {
             Dimension targetSize = new Dimension((int)maxWidth, (int)maxHeight);
             driver.manage().window().setSize(targetSize);
 
-            //使用getScreenshotAs进行截取屏幕
-            File img = driver.getScreenshotAs(OutputType.FILE);
+            // 使用getScreenshotAs进行截取屏幕img
+            File img = driver.getScreenshotAs(OutputType.FILE); // 文件形式
+            // byte[] img = driver.getScreenshotAs(OutputType.BYTES); // 字节数组形式
+            // System.out.println("字节数组：" + Arrays.toString(img));
+            // ByteArrayInputStream img = new ByteArrayInputStream(driver.getScreenshotAs(OutputType.BYTES)); //字节流形式
             String uuid = UUID.randomUUID().toString();
             FileUtil.copyFile(img, new File("E:\\Project\\Crawl\\outcome\\SnapShots\\"+uuid + ".png"));
         } catch (Exception e) {
